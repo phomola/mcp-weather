@@ -1,2 +1,2 @@
 # mcp-weather
-An example of a MCP tool for Apple Intelligence
+An example of an MCP tool for Apple Intelligence

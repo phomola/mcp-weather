@@ -65,14 +65,23 @@ func main() {
         print("model not available")
         return
     }
-    let session = LanguageModelSession(model: model, tools: [WeatherTool()])
+    let session = LanguageModelSession(model: model, tools: [WeatherTool()], instructions: "Provides weather forecasts for the US.")
     let semaphore = DispatchSemaphore(value: 0)
     Task {
         do {
-            let response = try await session.respond(to: "What is the weather forecast for Columbus?")
-            print(response.content)
+            let response = try await session.respond(to: "What is the weather forecast for Columbus, Ohio?", options: GenerationOptions(temperature: 1.0))
+            print("output: \(response.content)")
+            // print("==========")
+            // print(session.transcript.count)
+            // for entry in session.transcript {
+            //     print(entry)
+            // }
+        } catch LanguageModelSession.GenerationError.exceededContextWindowSize {
+            print("error: exceeded context window size")
+        } catch LanguageModelSession.GenerationError.unsupportedLanguageOrLocale {
+            print("error: unsupported language or locale")
         } catch {
-            print(error.localizedDescription)
+            print("error: \(error.localizedDescription)")
         }
         semaphore.signal()
     }

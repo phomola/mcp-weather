@@ -24,7 +24,9 @@ struct WeatherTool: Tool {
     
     @Generable
     struct Arguments {
+        @Guide(description: "The latitude of the location.")
         var latitude: Double
+        @Guide(description: "The longitude of the location.")
         var longitude: Double
     }
 
@@ -71,6 +73,9 @@ func main() {
         do {
             let response = try await session.respond(to: "What is the weather forecast for Columbus, Ohio?", options: GenerationOptions(temperature: 1.0))
             print("output: \(response.content)")
+            // for try await partial in session.streamResponse(to: "What is the weather forecast for Columbus, Ohio?", options: GenerationOptions(temperature: 1.0)) {
+            //     print(partial.content)
+            // }
             // print("==========")
             // print(session.transcript.count)
             // for entry in session.transcript {

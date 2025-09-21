@@ -67,20 +67,22 @@ func main() {
         print("model not available")
         return
     }
-    let session = LanguageModelSession(model: model, tools: [WeatherTool()], instructions: "Provides weather forecasts for the US.")
+    let session = LanguageModelSession(model: model, tools: [WeatherTool()], instructions: "Provide weather forecasts for the US using the provided tools.")
     let semaphore = DispatchSemaphore(value: 0)
     Task {
         do {
-            let response = try await session.respond(to: "What is the weather forecast for Columbus, Ohio?", options: GenerationOptions(temperature: 1.0))
+            let response = try await session.respond(to: "What is the weather forecast for Seattle?", options: GenerationOptions(temperature: 1.0))
             print("output: \(response.content)")
             // for try await partial in session.streamResponse(to: "What is the weather forecast for Columbus, Ohio?", options: GenerationOptions(temperature: 1.0)) {
-            //     print(partial.content)
+            //     print("partial output: \(partial.content)")
             // }
             // print("==========")
             // print(session.transcript.count)
             // for entry in session.transcript {
             //     print(entry)
             // }
+            let response2 = try await session.respond(to: "Convert the temperature in the forecast to degrees Celsius.", options: GenerationOptions(temperature: 1.0))
+            print("output: \(response2.content)")
         } catch LanguageModelSession.GenerationError.exceededContextWindowSize {
             print("error: exceeded context window size")
         } catch LanguageModelSession.GenerationError.unsupportedLanguageOrLocale {

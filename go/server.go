@@ -67,7 +67,7 @@ func getForecast(ctx context.Context, _ *mcp.CallToolRequest, input *toolInput) 
 	if err != nil {
 		return nil, nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, &toolOutput{Error: "The location couldn't be found. The tool only provides data for the US."}, nil
 	}

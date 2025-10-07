@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/modelcontextprotocol/go-sdk/mcp"
+	"github.com/fealsamh/go-utils/mcp"
 )
 
 type (
@@ -50,33 +50,33 @@ type (
 	}
 )
 
-func getForecast(ctx context.Context, _ *mcp.CallToolRequest, input *toolInput) (*mcp.CallToolResult, *toolOutput, error) {
+func getForecast(ctx context.Context, input *toolInput) (*toolOutput, error) {
 	in := weatherRequest{Latitude: input.Latitude, Longitude: input.Longitude}
 	b, err := json.Marshal(&in)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://arax.ee/weather/forecast", bytes.NewReader(b))
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	var cl http.Client
 	resp, err := cl.Do(req)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, &toolOutput{Error: "The location couldn't be found. The tool only provides data for the US."}, nil
+		return &toolOutput{Error: "The location couldn't be found. The tool only provides data for the US."}, nil
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, nil, fmt.Errorf("unexpected status code: %s", resp.Status)
+		return nil, fmt.Errorf("unexpected status code: %s", resp.Status)
 	}
 	var out weatherResponse
 	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	periods := make([]modelPeriod, 0, 5)
 	for i, p := range out.Periods {
@@ -85,13 +85,13 @@ func getForecast(ctx context.Context, _ *mcp.CallToolRequest, input *toolInput) 
 		}
 		periods = append(periods, modelPeriod{p.Name, p.Detailed})
 	}
-	return nil, &toolOutput{Periods: periods}, nil
+	return &toolOutput{Periods: periods}, nil
 }
 
 func main() {
-	server := mcp.NewServer(&mcp.Implementation{Name: "weather", Version: "v1.0.0"}, nil)
-	mcp.AddTool(server, &mcp.Tool{Name: "weatherForecasts", Description: "Provides weather forecasts for the US."}, getForecast)
-	if err := server.Run(context.Background(), new(mcp.StdioTransport)); err != nil {
+	server := mcp.NewServer("weather", "v1.0.0")
+	mcp.AddTool(server, "weatherForecasts", "Provides weather forecasts for the US.", getForecast)
+	if err := server.Run(context.Background()); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

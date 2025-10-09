@@ -2,7 +2,7 @@ module weather
 
 go 1.24.0
 
-require github.com/modelcontextprotocol/go-sdk v1.0.0 // indirect
+require github.com/modelcontextprotocol/go-sdk v1.0.0
 
 require (
 	github.com/fealsamh/go-utils v0.1.55
